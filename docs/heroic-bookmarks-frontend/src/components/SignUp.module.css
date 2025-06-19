@@ -1,0 +1,87 @@
+/* Container for the signup form, same background as login (if desired) */
+.signUpContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 20px;
+  background-image: url("../assets/images/formBackground.gif"); /* same background or customize */
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Form box styling, similar to your login form */
+.signUpForm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;
+  min-height: 300px;
+  padding: 20px;
+  border: 3px solid #fff;
+  border-radius: 8px;
+  background-color: transparent;
+  border-top-right-radius: 50px;
+}
+
+/* Title styling, matching login style */
+.signUpTitle {
+  font-family: "Press Start 2P";
+  font-size: 16px;
+  color: #fff;
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* Input styling, matching login inputs */
+.signUpInput {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  font-family: "Press Start 2P", cursive;
+  font-size: 10px;
+  color: #fff;
+  background-color: #000;
+  border: 2px solid #fff;
+  text-align: center;
+  letter-spacing: 1px;
+  outline: none;
+  box-shadow: none;
+}
+
+/* Button styling, matching login button */
+.signUpButton {
+  width: 100%;
+  padding: 10px;
+  font-family: "Press Start 2P", cursive;
+  font-size: 10px;
+  color: #000;
+  background-color: #fff;
+  border: 2px solid #fff;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 20px;
+  transition: background-color 0.3s;
+}
+
+.signUpButton:hover {
+  background-color: #ccc;
+}
+
+
+.signUpContainer .loginSection {
+  color: #fff;
+  font-size: 13px;
+  margin: 40px 5px 10px;
+}
+
+.loginSection span {
+  color: aqua;
+  cursor: pointer;
+}

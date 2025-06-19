@@ -1,0 +1,117 @@
+.footerContainer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 20px 10px;
+  background-color: transparent;
+  z-index: 10;
+  font-size: 13px;
+}
+
+.footerContainer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(to right, #e96dca93, #833d72a1);
+  clip-path: polygon(
+    0 0%,
+    /* Top left */ 15% 20%,
+    /* First valley */ 50% 0%,
+    /* Back to peak */ 75% 20%,
+    /* Second valley */ 100% 0%,
+    /* Final peak */ 100% 100%,
+    /* Bottom right */ 0 100% /* Bottom left */
+  );
+  z-index: -1;
+}
+
+.footerContainer .leftIcon,
+.footerContainer .rightIcon {
+}
+
+.footerContainer .shopToggle {
+  position: absolute;
+  top: -50%;
+  left: 5%;
+  background-color: azure;
+  padding: 20px 30px;
+  border-radius: 40px;
+  border-bottom-left-radius: 10px;
+}
+
+.footerContainer .aboutToggle {
+  position: absolute;
+  top: -90%;
+  right: 4.55%;
+  background-color: azure;
+  padding: 20px 30px;
+  border-radius: 20px;
+  border-bottom-right-radius: 5px;
+}
+
+.footerContainer .popup li {
+  list-style: none;
+  padding: 5px;
+}
+
+.footerContainer .popup a {
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+/* Responsive adjustments for footer */  
+@media (max-width: 1199px) {  
+  .footerContainer {  
+    flex-direction: row; /* Stack footer items */  
+    font-size: 12px;   
+  }  
+
+  .footerContainer .shopToggle {
+    top: -60%;
+    left: 6%;
+  }
+
+  .footerContainer .aboutToggle {
+    top: -90%;
+    right: 6%;
+  }
+}  
+
+@media (max-width: 767px) {  
+  .footerContainer {  
+    padding: 20px 5px 10px; /* Less padding in footer */  
+  }  
+
+  .footerContainer .leftIcon img,  
+  .footerContainer .rightIcon img {  
+    width: 30px; /* Adjust icon size */  
+    height: 30px;  
+  }
+
+  .footerContainer h3 {  
+    font-size: 10px; /* Decrease footer text size */  
+  } 
+
+
+  
+  .footerContainer .shopToggle {
+    top: -80%;
+    right: 6%;
+    width:45%;
+    text-align: center;
+  }
+
+  
+  .footerContainer .aboutToggle {
+    top: -120%;
+    right: 6%;
+  }
+}  

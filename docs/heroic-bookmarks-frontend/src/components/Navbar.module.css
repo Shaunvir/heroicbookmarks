@@ -1,0 +1,66 @@
+.navbar {
+  position: relative;
+  width: 100%;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+}
+
+.navbar .left img {
+  width: 120px;
+  cursor: pointer;
+}
+
+.navbar .right img {
+  width: 60px;
+  cursor: pointer;
+}
+
+.navbar .popup {
+  position: absolute;
+  background-color: red;
+  color: #fff;
+  z-index: 2;
+  right: 3%;
+  padding: 20px;
+  border-radius: 10px;
+  border-radius: 20px;
+  border-top-right-radius: 5px;
+  background-color: azure;
+}
+
+.navbar .popup li {
+  list-style-type: none;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.popup a {
+  text-decoration: none;
+}
+
+@media (max-width: 1199px) {
+  .navbar .popup {
+    right: 5%;
+  }
+}
+
+/* Responsive adjustments for Navbar */  
+@media (max-width: 767px) {  
+  .navbar {  
+    flex-direction: row; /* Stack navbar items */  
+  }  
+
+  .navbar .left img {
+    width: 100px;
+  }
+
+  .navbar .right img {
+    width: 40px;
+  }
+
+  .navbar .popup {
+    right: 7%;
+  }
+}  
