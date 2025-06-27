@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>White Tiger Forest Runner</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        
+        #gameContainer {
+            border: 4px solid #8B4513;
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            background: #000;
+        }
+        
+        canvas {
+            display: block;
+            background: linear-gradient(to bottom, #87CEEB 0%, #90EE90 50%, #228B22 100%);
+        }
+        
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 20px;
+            text-shadow: 2px 2px 0px #000;
+            z-index: 10;
+        }
+        
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 24px;
+            display: none;
+            z-index: 20;
+        }
+        
+        #instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-shadow: 2px 2px 0px #000;
+            text-align: center;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
+        <div id="ui">
+            <div>Score: <span id="score">0</span></div>
+            <div>High Score: <span id="highScore">0</span></div>
+        </div>
+        <div id="gameOver">
+            <h2>Game Over!</h2>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <p>Press SPACE to play again</p>
+        </div>
+        <div id="instructions">
+            Press SPACE to jump • Avoid boulders and lizards
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Game variables
+        let gameRunning = false;
+        let score = 0;
+        let gameSpeed = 3;
+        let highScore = localStorage.getItem('tigerRunnerHighScore') || 0;
+        document.getElementById('highScore').textContent = highScore;
+        
+        // Tiger object
+        const tiger = {
+            x: 100,
+            y: 280,
+            width: 60,
+            height: 40,
+            jumping: false,
+            jumpSpeed: 0,
+            gravity: 0.5,
+            jumpPower: -18,
+            groundY: 280
+        };
+        
+        // Arrays for obstacles and background elements
+        let obstacles = [];
+        let trees = [];
+        let clouds = [];
+        let particles = [];
+        
+        // Initialize background elements
+        function initBackground() {
+            // Create trees
+            for (let i = 0; i < 10; i++) {
+                trees.push({
+                    x: Math.random() * canvas.width * 2,
+                    y: 200 + Math.random() * 100,
+                    width: 40 + Math.random() * 20,
+                    height: 80 + Math.random() * 40,
+                    type: Math.random() > 0.5 ? 'pine' : 'oak'
+                });
+            }
+            
+            // Create clouds
+            for (let i = 0; i < 5; i++) {
+                clouds.push({
+                    x: Math.random() * canvas.width * 2,
+                    y: 20 + Math.random() * 80,
+                    width: 60 + Math.random() * 40,
+                    height: 30 + Math.random() * 20,
+                    speed: 0.5 + Math.random() * 0.5
+                });
+            }
+        }
+        
+        // Draw tiger
+        function drawTiger() {
+            ctx.fillStyle = '#F8F8FF'; // White color
+            ctx.fillRect(tiger.x, tiger.y, tiger.width, tiger.height);
+            
+            // Tiger stripes
+            ctx.fillStyle = '#C0C0C0';
+            for (let i = 0; i < 3; i++) {
+                ctx.fillRect(tiger.x + 10 + i * 15, tiger.y + 5, 3, 30);
+            }
+            
+            // Tiger head
+            ctx.fillStyle = '#F8F8FF';
+            ctx.fillRect(tiger.x + 45, tiger.y - 15, 25, 20);
+            
+            // Eyes
+            ctx.fillStyle = '#000';
+            ctx.fillRect(tiger.x + 50, tiger.y - 10, 3, 3);
+            ctx.fillRect(tiger.x + 60, tiger.y - 10, 3, 3);
+            
+            // Tail
+            ctx.fillStyle = '#F8F8FF';
+            ctx.fillRect(tiger.x - 20, tiger.y + 10, 25, 8);
+        }
+        
+        // Draw obstacles
+        function drawObstacle(obstacle) {
+            if (obstacle.type === 'boulder') {
+                ctx.fillStyle = '#696969';
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+                // Add some texture
+                ctx.fillStyle = '#A9A9A9';
+                ctx.fillRect(obstacle.x + 5, obstacle.y + 5, 10, 10);
+                ctx.fillRect(obstacle.x + obstacle.width - 15, obstacle.y + 10, 8, 8);
+            } else if (obstacle.type === 'lizard') {
+                ctx.fillStyle = '#228B22';
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+                // Lizard head
+                ctx.fillRect(obstacle.x + obstacle.width, obstacle.y + 5, 15, 10);
+                // Lizard tail
+                ctx.fillRect(obstacle.x - 10, obstacle.y + 8, 12, 4);
+                // Eye
+                ctx.fillStyle = '#000';
+                ctx.fillRect(obstacle.x + obstacle.width + 8, obstacle.y + 7, 2, 2);
+            }
+        }
+        
+        // Draw background elements
+        function drawBackground() {
+            // Draw trees
+            trees.forEach(tree => {
+                if (tree.type === 'pine') {
+                    // Pine tree
+                    ctx.fillStyle = '#8B4513';
+                    ctx.fillRect(tree.x + tree.width/2 - 5, tree.y, 10, tree.height);
+                    ctx.fillStyle = '#228B22';
+                    ctx.fillRect(tree.x, tree.y - 20, tree.width, 40);
+                    ctx.fillRect(tree.x + 10, tree.y - 40, tree.width - 20, 30);
+                } else {
+                    // Oak tree
+                    ctx.fillStyle = '#8B4513';
+                    ctx.fillRect(tree.x + tree.width/2 - 8, tree.y, 16, tree.height);
+                    ctx.fillStyle = '#32CD32';
+                    ctx.beginPath();
+                    ctx.arc(tree.x + tree.width/2, tree.y - 10, tree.width/2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+            
+            // Draw clouds
+            clouds.forEach(cloud => {
+                ctx.fillStyle = '#FFFFFF';
+                ctx.beginPath();
+                ctx.arc(cloud.x, cloud.y, cloud.width/3, 0, Math.PI * 2);
+                ctx.arc(cloud.x + cloud.width/3, cloud.y, cloud.width/3, 0, Math.PI * 2);
+                ctx.arc(cloud.x + 2*cloud.width/3, cloud.y, cloud.width/3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // Draw ground
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(0, 320, canvas.width, 80);
+            
+            // Ground texture
+            ctx.fillStyle = '#A0522D';
+            for (let i = 0; i < canvas.width; i += 20) {
+                ctx.fillRect(i, 325, 10, 5);
+                ctx.fillRect(i + 5, 335, 8, 3);
+            }
+        }
+        
+        // Update tiger physics
+        function updateTiger() {
+            if (tiger.jumping) {
+                tiger.jumpSpeed += tiger.gravity;
+                tiger.y += tiger.jumpSpeed;
+                
+                if (tiger.y >= tiger.groundY) {
+                    tiger.y = tiger.groundY;
+                    tiger.jumping = false;
+                    tiger.jumpSpeed = 0;
+                }
+            }
+        }
+        
+        // Update obstacles
+        function updateObstacles() {
+            // Move obstacles
+            obstacles.forEach(obstacle => {
+                obstacle.x -= gameSpeed;
+            });
+            
+            // Remove off-screen obstacles
+            obstacles = obstacles.filter(obstacle => obstacle.x + obstacle.width > 0);
+            
+            // Spawn new obstacles
+            if (obstacles.length === 0 || obstacles[obstacles.length - 1].x < canvas.width - 400) {
+                spawnObstacle();
+            }
+        }
+        
+        // Spawn new obstacle
+        function spawnObstacle() {
+            const type = Math.random() > 0.7 ? 'lizard' : 'boulder';
+            const obstacle = {
+                x: canvas.width,
+                type: type
+            };
+            
+            if (type === 'boulder') {
+                obstacle.y = 280;
+                obstacle.width = 30 + Math.random() * 20;
+                obstacle.height = 40 + Math.random() * 20;
+            } else {
+                obstacle.y = 300;
+                obstacle.width = 40;
+                obstacle.height = 20;
+            }
+            
+            obstacles.push(obstacle);
+        }
+        
+        // Update background
+        function updateBackground() {
+            // Move trees
+            trees.forEach(tree => {
+                tree.x -= gameSpeed * 0.5;
+                if (tree.x + tree.width < 0) {
+                    tree.x = canvas.width + Math.random() * 200;
+                }
+            });
+            
+            // Move clouds
+            clouds.forEach(cloud => {
+                cloud.x -= cloud.speed;
+                if (cloud.x + cloud.width < 0) {
+                    cloud.x = canvas.width + Math.random() * 300;
+                }
+            });
+        }
+        
+        // Check collisions
+        function checkCollisions() {
+            obstacles.forEach(obstacle => {
+                if (tiger.x < obstacle.x + obstacle.width &&
+                    tiger.x + tiger.width > obstacle.x &&
+                    tiger.y < obstacle.y + obstacle.height &&
+                    tiger.y + tiger.height > obstacle.y) {
+                    gameOver();
+                }
+            });
+        }
+        
+        // Update score and difficulty
+        function updateScore() {
+            score += 1;
+            document.getElementById('score').textContent = score;
+            
+            // Increase difficulty gradually
+            if (score % 500 === 0) {
+                gameSpeed += 0.5;
+            }
+        }
+        
+        // Game over
+        function gameOver() {
+            gameRunning = false;
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('gameOver').style.display = 'block';
+            
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('tigerRunnerHighScore', highScore);
+                document.getElementById('highScore').textContent = highScore;
+            }
+        }
+        
+        // Reset game
+        function resetGame() {
+            gameRunning = true;
+            score = 0;
+            gameSpeed = 3;
+            tiger.y = tiger.groundY;
+            tiger.jumping = false;
+            tiger.jumpSpeed = 0;
+            obstacles = [];
+            document.getElementById('score').textContent = '0';
+            document.getElementById('gameOver').style.display = 'none';
+        }
+        
+        // Game loop
+        function gameLoop() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background
+            drawBackground();
+            
+            if (gameRunning) {
+                updateTiger();
+                updateObstacles();
+                updateBackground();
+                checkCollisions();
+                updateScore();
+            }
+            
+            // Draw game elements
+            drawTiger();
+            obstacles.forEach(drawObstacle);
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Input handling
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (!gameRunning) {
+                    resetGame();
+                } else if (!tiger.jumping) {
+                    tiger.jumping = true;
+                    tiger.jumpSpeed = tiger.jumpPower;
+                }
+            }
+        });
+        
+        // Touch/click support for mobile
+        canvas.addEventListener('click', () => {
+            if (!gameRunning) {
+                resetGame();
+            } else if (!tiger.jumping) {
+                tiger.jumping = true;
+                tiger.jumpSpeed = tiger.jumpPower;
+            }
+        });
+        
+        // Initialize and start game
+        initBackground();
+        gameLoop();
+    </script>
+</body>
+</html>
